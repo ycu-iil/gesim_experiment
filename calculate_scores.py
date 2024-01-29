@@ -14,13 +14,14 @@ from rdkit.Chem.Scaffolds import MurckoScaffold
 def _merge_files(dirname: str, useGraphSim: bool =False, radiusGraphSim: int =2):
     def _extract_number(fname):
         base, _ = os.path.splitext(fname)
-        return int(base.split("_")[-1])
+        return int(base.split("_active")[-1])
 
     if useGraphSim:
-        files = glob.glob(os.path.join(dirname, f"radius_{radiusGraphSim}", 'Result_GESim_*.txt'))
+        files = glob.glob(os.path.join(dirname, f"gesims_r{radiusGraphSim}_active*.txt"))
     else:  # tanimoto
-        files = glob.glob(os.path.join(dirname, '0', 'Result_Gent_*.txt'))
+        files = glob.glob(os.path.join(dirname, f"tanimoto_sims_active*.txt"))
     files_sorted = sorted(files, key=_extract_number)
+    print(files_sorted)
 
     with open(files_sorted[0], 'r') as f:
         num_lines = len(f.readlines())
@@ -31,15 +32,12 @@ def _merge_files(dirname: str, useGraphSim: bool =False, radiusGraphSim: int =2)
         with open(fname, 'r') as f:
             lines = f.readlines()
         for i, l in enumerate(lines):
-            if useGraphSim:
-                _, _, value = l.split('\t')
-            else:
-                _, value = l.split('\t')
+            _, value = l.split('\t')
             merged_results[i].append(value.strip('\n'))
     if useGraphSim:
-        ofname = os.path.join(dirname, f"radius_{radiusGraphSim}", "merged_results.txt")
-    else:  # tanimoto
-        ofname = os.path.join(dirname, '0', "merged_results.txt")
+        ofname = os.path.join(dirname, f"merged_results_r{radiusGraphSim}.txt")
+    else:
+        ofname = os.path.join(dirname, f"merged_results.txt")
     print(f"[INFO] Dump file: {ofname}")
     with open(ofname, 'w') as f:
         f.write('\n'.join('\t'.join(r) for r in merged_results))

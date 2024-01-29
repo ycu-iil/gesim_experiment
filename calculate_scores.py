@@ -147,12 +147,12 @@ def _calc_scaffoldEF(
     return ret_dict
 
 
-def get_scaffolds_from_target_name(target_name: str) -> np.array(str):
-    print(f"Target: {target_name} Process...")
-    with open(f"./all_queries_LIT_PCBA/query_maps/{target_name}/actives.smi", 'r') as f:
+def get_scaffolds_from_target_name(dataset_dir: str) -> np.array(str):
+    print(f"Target: {dataset_dir} Process...")
+    with open(os.path.join(dataset_dir, "actives.smi"), 'r') as f:
         lines = [l.split(' ')[0] for l in f.readlines()]
         actives = [MurckoScaffold.MurckoScaffoldSmiles(s) for s in lines]
-    with open(f"./all_queries_LIT_PCBA/query_maps/{target_name}/inactives.smi", 'r') as f:
+    with open(os.path.join(dataset_dir, "inactives.smi"), 'r') as f:
         lines = [l.split(' ')[0] for l in f.readlines()]
         inactives = [MurckoScaffold.MurckoScaffoldSmiles(s) for s in lines]
     return np.array(actives + inactives)

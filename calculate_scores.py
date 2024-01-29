@@ -1,22 +1,14 @@
 import glob
-import itertools
 import os
 import pickle
 import random
 random.seed(42)
 from typing import List, Dict
 
-#import matplotlib.pyplot as plt
-import matplotlib_inline
-matplotlib_inline.backend_inline.set_matplotlib_formats('retina')
 import numpy as np
-#import pandas as pd
 import polars as pl
-from rdkit import Chem, DataStructs
 from rdkit.ML.Scoring import Scoring
-from rdkit.Chem import AllChem, Descriptors
 from rdkit.Chem.Scaffolds import MurckoScaffold
-#import seaborn as sns
 
 
 def _merge_files(dirname: str, useGraphSim: bool =False, radiusGraphSim: int =2):
@@ -53,35 +45,6 @@ def _merge_files(dirname: str, useGraphSim: bool =False, radiusGraphSim: int =2)
         f.write('\n'.join('\t'.join(r) for r in merged_results))
 
 
-#def _create_dataframe_from_files(dirname: str, useGraphSim: bool =False, radiusGraphSim: int =2) -> pl.DataFrame:
-#    def _extract_number(fname):
-#        base, _ = os.path.splitext(fname)
-#        return int(base.split("_")[-1])
-#
-#    if useGraphSim:
-#        files = glob.glob(os.path.join(dirname, f"radius_{radiusGraphSim}", 'Result_GESim_*.txt'))
-#    else:  # tanimoto
-#        files = glob.glob(os.path.join(dirname, '0', 'Result_Gent_*.txt'))
-#    files_sorted = sorted(files, key=_extract_number)
-#
-#    if useGraphSim:
-#        df = pl.read_csv(files_sorted[0], has_header=False, separator="\t", columns=[1, 2], new_columns=['index', "0"], dtypes=[pl.Int32, pl.Float32])
-#    else:  # tanimoto
-#        df = pl.read_csv(files_sorted[0], has_header=False, separator="\t", new_columns=['index', "0"], dtypes=[pl.Int32, pl.Float32])
-#
-#    for i, f in enumerate(files_sorted[1:], start=1):
-#        if useGraphSim:
-#            df_to_merge = pl.read_csv(f, has_header=False, separator="\t", columns=[1, 2], new_columns=['index', f"{i}"], dtypes=[pl.Int32, pl.Float32])
-#        else:  # tanimoto
-#            df_to_merge = pl.read_csv(f, has_header=False, separator="\t", new_columns=['index', f"{i}"], dtypes=[pl.Int32, pl.Float32])
-#        df = df.join(df_to_merge, on='index', how='outer')
-#
-#    column_names = df.columns
-#    column_names.remove('index')
-#    df = df.with_columns((pl.col('index').is_in([int(i) for i in column_names])).alias('is_active'))
-#    
-#    return df
-
 def _create_dataframe_from_files(dirname: str, useGraphSim: bool =False, radiusGraphSim: int =2) -> pl.DataFrame:
     if useGraphSim:
         num_columns = len(glob.glob(os.path.join(dirname, f"radius_{radiusGraphSim}", 'Result_GESim_*.txt')))
@@ -116,15 +79,17 @@ def _calculate_ef_bedroc_auc(
     bedroc_list = []
     auc_list = []
 
-    df = _create_dataframe_from_files(dirname, useGraphSim=useGraphSim, radiusGraphSim=radiusGraphSim)
+    df = _create_dataframe_from_files(
+        dirname,
+        useGraphSim=useGraphSim,
+        radiusGraphSim=radiusGraphSim)
     active_column_names = [c for c in df.columns if c not in {'index', 'is_active'}]
     for _ in range(trial_num):
         sampled_columns = random.sample(active_column_names, sample_num)
         bool_list = (df
             .select(
                 pl.col('index'), 
-                #pl.min(sampled_columns).apply(lambda x: 1 - x if useGraphSim else x),  # graph similarity = 1 - graph entropy
-                pl.min(sampled_columns).apply(lambda x: 1 - x).alias('max') if useGraphSim else pl.max(sampled_columns),
+                pl.max_horizontal(sampled_columns),
                 pl.col('is_active'))
             .sort(
                 'max', 

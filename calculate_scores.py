@@ -165,42 +165,83 @@ def get_scaffolds_from_target_name(dataset_dir: str) -> np.array(str):
 
 
 def main():
-    radius_list = [2, 3, 4]
-    base_dir_list = ["./230623_graphsim/GESim/", "./Tanimoto_RDKit_Results/"]
+    trial_num = 50
+    sample_num = 10
+    radius_list = [1, 2, 3, 4]
+    dataset_root_dir = "./data/benchmarking_platform/compounds/MUV/"
+    result_dir_gesim = "./result/benchmarking_platform/MUV/ge_sim"
+    result_dir_tanimoto = "./result/benchmarking_platform/MUV/tanimoto_sim/"
+    base_dir_list = [result_dir_gesim, result_dir_tanimoto]
     alpha_list = [20, 100]
     fractions_list = [[0.05], [0.01]]
+    do_merge_files = True
 
     for base_dir in base_dir_list:
         print(base_dir)
-        target_dirs = glob.glob(os.path.join(base_dir, "Results_*"))
+        target_dirs = [d for d in glob.glob(os.path.join(base_dir, "result_*")) if os.path.isdir(d)]
         target_dirs.sort()
-
-        if base_dir == "./230623_graphsim/GESim/":
+        
+        if base_dir == result_dir_gesim:
             for alpha, fractions in zip(alpha_list, fractions_list):
                 for r in radius_list:
                     result_dict = {}
                     for target_dir in target_dirs:
                         target_name = os.path.basename(target_dir).split("_", 1)[1]
                         print(target_name)
-                        result = _calculate_ef_bedroc_auc(target_dir, trial_num=50, sample_num=10, alpha=alpha, fractions=fractions,
-                                                         useGraphSim=True, radiusGraphSim=r)
+                        if do_merge_files:
+                            _merge_files(target_dir, useGraphSim=True, radiusGraphSim=r)
+                        result = _calculate_ef_bedroc_auc(
+                            target_dir,
+                            trial_num=trial_num,
+                            sample_num=sample_num,
+                            alpha=alpha,
+                            fractions=fractions,
+                            useGraphSim=True,
+                            radiusGraphSim=r)
+                        scaffolds = get_scaffolds_from_target_name(os.path.join(dataset_root_dir, target_name))
+                        result.update(_calc_scaffoldEF(
+                            target_dir,
+                            scaffolds=scaffolds,
+                            fraction=fractions[0],
+                            trial_num=trial_num,
+                            sample_num=sample_num,
+                            useGraphSim=True,
+                            radiusGraphSim=r
+                        ))
                         result_dict[target_name] = result
                     ofname = f"{base_dir}/result_r{r}_a{alpha}_f{str(fractions[0]).replace('.', '')}.pkl"
                     with open(ofname, 'wb') as f:
                         pickle.dump(result_dict, f)
-        else:  # "./Tanimoto_RDKit_Results/"
+        else:  # "./result/tanimoto_sim"
             for alpha, fractions in zip(alpha_list, fractions_list):
                 result_dict = {}
                 for target_dir in target_dirs:
                     target_name = os.path.basename(target_dir).split("_", 1)[1]
                     print(target_name)
-                    result = _calculate_ef_bedroc_auc(target_dir, trial_num=50, sample_num=10, alpha=alpha, fractions=fractions,
-                                                     useGraphSim=False, radiusGraphSim=None)
+                    if do_merge_files:
+                        _merge_files(target_dir, useGraphSim=False, radiusGraphSim=None)
+                    result = _calculate_ef_bedroc_auc(
+                        target_dir,
+                        trial_num=trial_num,
+                        sample_num=sample_num,
+                        alpha=alpha,
+                        fractions=fractions,
+                        useGraphSim=False,
+                        radiusGraphSim=None)
+                    scaffolds = get_scaffolds_from_target_name(os.path.join(dataset_root_dir, target_name))
+                    result.update(_calc_scaffoldEF(
+                        target_dir,
+                        scaffolds=scaffolds,
+                        fraction=fractions[0],
+                        trial_num=trial_num,
+                        sample_num=sample_num,
+                        useGraphSim=False,
+                        radiusGraphSim=None
+                    ))
                     result_dict[target_name] = result
                 ofname = f"{base_dir}/result_a{alpha}_f{str(fractions[0]).replace('.', '')}.pkl"
                 with open(ofname, 'wb') as f:
                     pickle.dump(result_dict, f)
-    print("DONE!")
 
     
 def preprocess():

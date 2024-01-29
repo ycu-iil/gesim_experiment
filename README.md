@@ -2,6 +2,12 @@
 
 ## Preparation
 
+### Package requirements
+
+- Python: 3.11
+- GESim:
+- Polars: 0.19.15
+
 ### Clone this repository
 
 ```bash

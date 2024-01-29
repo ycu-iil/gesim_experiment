@@ -111,14 +111,20 @@ def _calculate_ef_bedroc_auc(
     return ret_dict
 
 def _calc_scaffoldEF(
-    df: pl.DataFrame,
+    dirname: str,
     scaffolds: np.array(str),
     fraction: float =0.05,
     sample_num: int =10,
     trial_num: int =50,
-    useGraphSim: bool=False)->float:
+    useGraphSim: bool=False,
+    radiusGraphSim: int=2)->float:
     
     scaffold_ef_list = []
+
+    df = _create_dataframe_from_files(
+        dirname,
+        useGraphSim=useGraphSim,
+        radiusGraphSim=radiusGraphSim)
 
     total_num = scaffolds.shape[0]
     total_scaffolds_num = np.unique(scaffolds).shape[0]
@@ -127,16 +133,16 @@ def _calc_scaffoldEF(
         sampled_columns = random.sample(active_column_names, sample_num)
         top_n_percent_idxs = df.select(
             pl.col('index'),
-            pl.min(sampled_columns).apply(lambda x: 1 - x).alias('max') if useGraphSim else pl.max(sampled_columns),
+            pl.max_horizontal(sampled_columns),
          ).sort(
-             'max', descending=True
+            'max', descending=True
          ).filter(
-             ~pl.col('index').is_in([int(i) for i in sampled_columns])
+            ~pl.col('index').is_in([int(i) for i in sampled_columns])  # remove training compounds
          ).select(
              pl.col('index')
          ).limit(
              int(len(df) * fraction)
-         ).to_pandas().values.flatten()
+         ).to_series()
         subset_num = top_n_percent_idxs.shape[0]
         subset_scaffolds_num = np.unique(scaffolds[top_n_percent_idxs]).shape[0]
         scaffold_ef_list.append((subset_scaffolds_num / subset_num) / (total_scaffolds_num / total_num))
@@ -217,47 +223,6 @@ def preprocess():
                 target_name = os.path.basename(target_dir).split("_", 1)[1]
                 print(target_name)
                 _merge_files(target_dir, useGraphSim=False, radiusGraphSim=None)
-    print("DONE!")
-
-
-def scaffold_calculation():
-    #radius_list = [2, 3, 4]
-    radius_list = []
-    base_dir_list = ["./230623_graphsim/GESim/", "./Tanimoto_RDKit_Results/"]
-    fraction = 0.05
-
-    for base_dir in base_dir_list:
-        print(base_dir)
-        target_dirs = glob.glob(os.path.join(base_dir, "Results_*"))
-        target_dirs.sort()
-
-        if base_dir == "./230623_graphsim/GESim/":
-            for r in radius_list:
-                result_dict = {}
-                for target_dir in target_dirs:
-                    target_name = os.path.basename(target_dir).split("_", 1)[1]
-                    print(target_name)
-                    scaffolds = get_scaffolds_from_target_name(target_name)
-                    df = _create_dataframe_from_files(target_dir, useGraphSim=True, radiusGraphSim=r)
-                    result = _calc_scaffoldEF(df, scaffolds, fraction=fraction, sample_num=10, trial_num=50,
-                                              useGraphSim=True)
-                    result_dict[target_name] = result
-                ofname = f"{base_dir}/result_sef_r{r}_f{str(fraction).replace('.', '')}.pkl"
-                with open(ofname, 'wb') as f:
-                    pickle.dump(result_dict, f)
-        else:  # "./Tanimoto_RDKit_Results/"
-            result_dict = {}
-            for target_dir in target_dirs:
-                target_name = os.path.basename(target_dir).split("_", 1)[1]
-                print(target_name)
-                scaffolds = get_scaffolds_from_target_name(target_name)
-                df = _create_dataframe_from_files(target_dir, useGraphSim=False, radiusGraphSim=None)
-                result = _calc_scaffoldEF(df, scaffolds, fraction=fraction, sample_num=10, trial_num=50,
-                                          useGraphSim=False)
-                result_dict[target_name] = result
-            ofname = f"{base_dir}/result_sef_f{str(fraction).replace('.', '')}.pkl"
-            with open(ofname, 'wb') as f:
-                pickle.dump(result_dict, f)
     print("DONE!")
 
 

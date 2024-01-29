@@ -244,30 +244,5 @@ def main():
                     pickle.dump(result_dict, f)
 
     
-def preprocess():
-    radius_list = [2, 3, 4]
-    base_dir_list = ["./230623_graphsim/GESim/", "./Tanimoto_RDKit_Results/"]
-
-    for base_dir in base_dir_list:
-        print(base_dir)
-        target_dirs = glob.glob(os.path.join(base_dir, "Results_*"))
-        target_dirs.sort()
-
-        if base_dir == "./230623_graphsim/GESim/":
-            for r in radius_list:
-                for target_dir in target_dirs:
-                    target_name = os.path.basename(target_dir).split("_", 1)[1]
-                    print(target_name)
-                    _merge_files(target_dir, useGraphSim=True, radiusGraphSim=r)
-        else:  # "./Tanimoto_RDKit_Results/"
-            for target_dir in target_dirs:
-                target_name = os.path.basename(target_dir).split("_", 1)[1]
-                print(target_name)
-                _merge_files(target_dir, useGraphSim=False, radiusGraphSim=None)
-    print("DONE!")
-
-
 if __name__ == "__main__":
-    #main()
-    #preprocess()
-    scaffold_calculation()
+    main()

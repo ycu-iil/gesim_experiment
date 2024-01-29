@@ -45,11 +45,11 @@ def _merge_files(dirname: str, useGraphSim: bool =False, radiusGraphSim: int =2)
 
 def _create_dataframe_from_files(dirname: str, useGraphSim: bool =False, radiusGraphSim: int =2) -> pl.DataFrame:
     if useGraphSim:
-        num_columns = len(glob.glob(os.path.join(dirname, f"radius_{radiusGraphSim}", 'Result_GESim_*.txt')))
-        fname = os.path.join(dirname, f"radius_{radiusGraphSim}", "merged_results.txt")
+        num_columns = len(glob.glob(os.path.join(dirname, f"gesims_r{radiusGraphSim}_active*.txt")))
+        fname = os.path.join(dirname, f"merged_results_r{radiusGraphSim}.txt")
     else:  # tanimoto
-        num_columns = len(glob.glob(os.path.join(dirname, '0', 'Result_Gent_*.txt')))
-        fname = os.path.join(dirname, "0", "merged_results.txt")
+        num_columns = len(glob.glob(os.path.join(dirname, f"tanimoto_sims_active*.txt")))
+        fname = os.path.join(dirname, "merged_results.txt")
     df = pl.read_csv(
         fname,
         has_header=False,

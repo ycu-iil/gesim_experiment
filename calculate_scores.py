@@ -22,7 +22,6 @@ def _merge_files(dirname: str):
         num_lines = len(f.readlines())
     merged_results = [[str(i)] for i in range(num_lines)]  # initialization with index
 
-    print("[INFO] Collect results...")
     for fname in files_sorted:
         with open(fname, 'r') as f:
             lines = f.readlines()
@@ -30,7 +29,7 @@ def _merge_files(dirname: str):
             _, value = l.split('\t')
             merged_results[i].append(value.strip('\n'))
     ofname = os.path.join(dirname, f"merged_results.txt")
-    print(f"[INFO] Dump file: {ofname}")
+    print(f"[INFO] Merge results to: {ofname}")
     with open(ofname, 'w') as f:
         f.write('\n'.join('\t'.join(r) for r in merged_results))
 
@@ -131,7 +130,6 @@ def _calc_scaffoldEF(
 
 
 def get_scaffolds_from_target_name(dataset_dir: str) -> np.array(str):
-    print(f"Target: {dataset_dir} Process...")
     with open(os.path.join(dataset_dir, "actives.smi"), 'r') as f:
         lines = [l.split(' ')[0] for l in f.readlines()]
         actives = [MurckoScaffold.MurckoScaffoldSmiles(s) for s in lines]
@@ -147,7 +145,6 @@ def main():
     dataset_type = ["ChEMBL", "MUV", "DUD"]
     alpha_list = [20, 100]
     fractions_list = [[0.05], [0.01]]
-    do_merge_files = True
 
     for dtype in dataset_type:
         dataset_root_dir = os.path.join("./data/benchmarking_platform/compounds/", dtype)
@@ -158,11 +155,12 @@ def main():
             target_dirs = [d for d in glob.glob(os.path.join(base_dir, "result_*")) if os.path.isdir(d)]
             target_dirs.sort()
 
+            do_merge_files = True
             for alpha, fractions in zip(alpha_list, fractions_list):
                 result_dict = {}
                 for target_dir in target_dirs:
                     target_name = os.path.basename(target_dir).split("_", 1)[1]
-                    print(target_name)
+                    print(f"Target name: {target_name} alpha: {alpha} fractions: {fractions}")
                     if do_merge_files:
                         _merge_files(target_dir)
                     result = _calculate_ef_bedroc_auc(
@@ -179,6 +177,7 @@ def main():
                         trial_num=trial_num,
                         sample_num=sample_num))
                     result_dict[target_name] = result
+                do_merge_files = False
                 ofname = f"{base_dir}/result_a{alpha}_f{str(fractions[0]).replace('.', '')}.pkl"
                 with open(ofname, 'wb') as f:
                     pickle.dump(result_dict, f)

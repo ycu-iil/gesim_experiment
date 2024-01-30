@@ -80,7 +80,6 @@ def main():
                 pool.apply_async(calc_bulk_tanimoto_sim, args=(query_afp, all_fps, output_dir, query_id))
             pool.close()
             pool.join()
-            print("  Done")
 
             print("  [PROCESS] Feature-connectivity Fingerprint (r=2, dim=2048)...")
             output_dir = f"{result_root_dir}/fc_fp/result_{target_name}/"
@@ -94,7 +93,6 @@ def main():
                 pool.apply_async(calc_bulk_tanimoto_sim, args=(query_afp, all_fps, output_dir, query_id))
             pool.close()
             pool.join()
-            print("  Done")
 
             print("  [PROCESS] MACCS keys...")
             output_dir = f"{result_root_dir}/maccs_key/result_{target_name}/"
@@ -108,7 +106,6 @@ def main():
                 pool.apply_async(calc_bulk_tanimoto_sim, args=(query_afp, all_fps, output_dir, query_id))
             pool.close()
             pool.join()
-            print("  Done")
 
             print("  [PROCESS] Atom Pair Fingerprint...")
             output_dir = f"{result_root_dir}/atom_pair_fp/result_{target_name}/"
@@ -122,7 +119,6 @@ def main():
                 pool.apply_async(calc_bulk_tanimoto_sim, args=(query_afp, all_fps, output_dir, query_id))
             pool.close()
             pool.join()
-            print("  Done")           
 
             print("  [PROCESS] Topological Torsion Fingerprint...")
             output_dir = f"{result_root_dir}/tt_fp/result_{target_name}/"
@@ -136,7 +132,6 @@ def main():
                 pool.apply_async(calc_bulk_tanimoto_sim, args=(query_afp, all_fps, output_dir, query_id))
             pool.close()
             pool.join()
-            print("  Done") 
 
             print("  [PROCESS] GESim...")
             output_dir = f"{result_root_dir}/ge_sim/result_{target_name}/"
@@ -146,7 +141,7 @@ def main():
                 pool.apply_async(calc_bulk_gesim, args=(query_amol, all_mols, output_dir, query_id))
             pool.close()
             pool.join()
-            print("  Done")
+    print("DONE!")
 
 
 if __name__ == "__main__":

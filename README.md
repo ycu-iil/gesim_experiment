@@ -1,14 +1,12 @@
 # gesim_experiment
 
-## Preparation
-
-### Package requirements
+## Package requirements
 
 - Python: 3.11
 - GESim:
 - Polars: 0.19.15
 
-### How to reproduce
+## How to reproduce
 
 ```bash
 git clone git@github.com:ycu-iil/gesim_experiment.git

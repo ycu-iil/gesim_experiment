@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "gesim_experiment"
+version = "0.1.0"
+description = ""
+authors = ["sishida21 <29348731+sishida21@users.noreply.github.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+rdkit = "2023.9.1"
+polars = "0.19.15"
+pandas = "^2.2.0"
+matplotlib = "^3.8.2"
+seaborn = "^0.13.2"
+jupyter = "^1.0.0"
+networkx = "^3.2.1"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+

@@ -29,7 +29,7 @@ def _merge_files(dirname: str):
             _, value = l.split('\t')
             merged_results[i].append(value.strip('\n'))
     ofname = os.path.join(dirname, f"merged_results.txt")
-    print(f"[INFO] Merge results to: {ofname}")
+    #print(f"[INFO] Merge results to: {ofname}")
     with open(ofname, 'w') as f:
         f.write('\n'.join('\t'.join(r) for r in merged_results))
 
@@ -91,53 +91,6 @@ def _calculate_ef_bedroc_auc(
     }
     return ret_dict
 
-def _calc_scaffoldEF(
-    dirname: str,
-    scaffolds: np.array(str),
-    fraction: float =0.05,
-    sample_num: int =5,
-    trial_num: int =50)->float:
-    
-    scaffold_ef_list = []
-
-    df = _create_dataframe_from_files(dirname)
-
-    total_num = scaffolds.shape[0]
-    total_scaffolds_num = np.unique(scaffolds).shape[0]
-    active_column_names = [c for c in df.columns if c not in {'index', 'is_active'}]
-    for _ in range(trial_num):
-        sampled_columns = random.sample(active_column_names, sample_num)
-        top_n_percent_idxs = df.select(
-            pl.col('index'),
-            pl.max_horizontal(sampled_columns),
-         ).sort(
-            'max', descending=True
-         ).filter(
-            ~pl.col('index').is_in([int(i) for i in sampled_columns])  # remove training compounds
-         ).select(
-             pl.col('index')
-         ).limit(
-             int(len(df) * fraction)
-         ).to_series()
-        subset_num = top_n_percent_idxs.shape[0]
-        subset_scaffolds_num = np.unique(scaffolds[top_n_percent_idxs]).shape[0]
-        scaffold_ef_list.append((subset_scaffolds_num / subset_num) / (total_scaffolds_num / total_num))
-    
-    ret_dict = {
-        "scaffold_enrichment_factor": scaffold_ef_list
-    }
-    return ret_dict
-
-
-def get_scaffolds_from_target_name(dataset_dir: str) -> np.array(str):
-    with open(os.path.join(dataset_dir, "actives.smi"), 'r') as f:
-        lines = [l.split(' ')[0] for l in f.readlines()]
-        actives = [MurckoScaffold.MurckoScaffoldSmiles(s) for s in lines]
-    with open(os.path.join(dataset_dir, "inactives.smi"), 'r') as f:
-        lines = [l.split(' ')[0] for l in f.readlines()]
-        inactives = [MurckoScaffold.MurckoScaffoldSmiles(s) for s in lines]
-    return np.array(actives + inactives)
-
 
 def main():
     trial_num = 50
@@ -147,7 +100,6 @@ def main():
     fractions_list = [[0.05], [0.01]]
 
     for dtype in dataset_type:
-        dataset_root_dir = os.path.join("./data/benchmarking_platform/compounds/", dtype)
         base_dir_list = [d for d in glob.glob(os.path.join("./result/benchmarking_platform/", dtype, "*")) if os.path.isdir(d)]
         
         for base_dir in base_dir_list:
@@ -169,13 +121,6 @@ def main():
                         sample_num=sample_num,
                         alpha=alpha,
                         fractions=fractions)
-                    scaffolds = get_scaffolds_from_target_name(os.path.join(dataset_root_dir, target_name))
-                    result.update(_calc_scaffoldEF(
-                        target_dir,
-                        scaffolds=scaffolds,
-                        fraction=fractions[0],
-                        trial_num=trial_num,
-                        sample_num=sample_num))
                     result_dict[target_name] = result
                 do_merge_files = False
                 ofname = f"{base_dir}/result_a{alpha}_f{str(fractions[0]).replace('.', '')}.pkl"

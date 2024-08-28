@@ -30,6 +30,17 @@ pip install --upgrade .
 
 ```bash
 cd gesim_experiment
+
+# Structural similarity benchmark
+git -C data/ clone git@github.com:nextmovesoftware/similaritybenchmark.git
+7zz -odata/similaritybenchmark/ x data/similaritybenchmark/SingleAssay.7z
+7zz -odata/similaritybenchmark/ x data/similaritybenchmark/MultiAssay.7z
+wget -P ./data https://ftp.ebi.ac.uk/pub/databases/chembl/ChEMBLdb/releases/chembl_20/chembl_20.sdf.gz
+python ss_sdf2smi.py
+python ss_calculate_single_assay.py
+python ss_calculate_multi_assay.py 
+
+# LBVS benchmark
 git -C data/ clone git@github.com:rdkit/benchmarking_platform.git
 python prepare_dataset.py
 python calculate_similarities.py

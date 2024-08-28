@@ -21,17 +21,17 @@ conda create -n gesim_expt python=3.11
 # Switch Python virtual environment to gesim_expt
 pip install poetry==1.7.1
 poetry install --no-root
-
 git clone git@github.com:LazyShion/GESim.git
 pip install --upgrade .
 ```
 
-## How to run virtual screening experiment
+## How to reproduce experiments
 
 ```bash
 cd gesim_experiment
 
 # Structural similarity benchmark
+# ref: https://jcheminf.biomedcentral.com/articles/10.1186/s13321-016-0148-0
 git -C data/ clone git@github.com:nextmovesoftware/similaritybenchmark.git
 7zz -odata/similaritybenchmark/ x data/similaritybenchmark/SingleAssay.7z
 7zz -odata/similaritybenchmark/ x data/similaritybenchmark/MultiAssay.7z
@@ -41,6 +41,7 @@ python ss_calculate_single_assay.py
 python ss_calculate_multi_assay.py 
 
 # LBVS benchmark
+# ref: https://jcheminf.biomedcentral.com/articles/10.1186/1758-2946-5-26
 git -C data/ clone git@github.com:rdkit/benchmarking_platform.git
 python lbvs_prepare_dataset.py
 python lbvs_calculate_similarities.py

@@ -3,6 +3,7 @@ import os
 import pickle
 import random
 random.seed(42)
+import sys
 from typing import List, Dict
 
 import numpy as np
@@ -92,15 +93,30 @@ def _calculate_ef_bedroc_auc(
     return ret_dict
 
 
+def check_sim_calc_result(dataset_type, root_dir):
+    for dtype in dataset_type:
+        sim_types = glob.glob(os.path.join(root_dir, dtype, "*"))
+        num_file_list = []
+        for sim_type in sim_types:
+            target_dirs = [d for d in glob.glob(os.path.join(sim_type, "result_*")) if os.path.isdir(d)]
+            num_file_list.append([len(glob.glob(os.path.join(d, "*active*.txt"))) for d in target_dirs])
+        is_same = all(num_file_list[0] == l for l in num_file_list)
+        if not is_same:
+            sys.exit("[ERROR] Some errors occured in the result of `calculate_similarities.py`.") 
+
+
 def main():
     trial_num = 50
     sample_num = 5
     dataset_type = ["ChEMBL", "MUV", "DUD"]
+    root_dir = "./result/benchmarking_platform/"
     alpha_list = [20, 100]
     fractions_list = [[0.05], [0.01]]
 
+    check_sim_calc_result(dataset_type, root_dir)
+
     for dtype in dataset_type:
-        base_dir_list = [d for d in glob.glob(os.path.join("./result/benchmarking_platform/", dtype, "*")) if os.path.isdir(d)]
+        base_dir_list = [d for d in glob.glob(os.path.join(root_dir, dtype, "*")) if os.path.isdir(d)]
         
         for base_dir in base_dir_list:
             print(base_dir)

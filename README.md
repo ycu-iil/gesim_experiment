@@ -42,7 +42,7 @@ python ss_calculate_multi_assay.py
 
 # LBVS benchmark
 git -C data/ clone git@github.com:rdkit/benchmarking_platform.git
-python prepare_dataset.py
-python calculate_similarities.py
-python calculate_scores.py 
+python lbvs_prepare_dataset.py
+python lbvs_calculate_similarities.py
+python lbvs_calculate_scores.py 
 ```

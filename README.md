@@ -22,6 +22,7 @@ conda create -n gesim_expt python=3.11
 pip install poetry==1.7.1
 poetry install --no-root
 git clone git@github.com:LazyShion/GESim.git
+cd GESim
 pip install --upgrade .
 ```
 

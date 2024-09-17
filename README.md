@@ -17,7 +17,7 @@
 ```bash
 git clone git@github.com:ycu-iil/gesim_experiment.git
 cd gesim_experiment
-conda create -n gesim_expt python=3.11
+conda create -n gesim_expt -c conda-forge python=3.11
 # Switch Python virtual environment to gesim_expt
 pip install poetry==1.7.1
 poetry install --no-root

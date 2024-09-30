@@ -76,7 +76,7 @@ def process_assay_file(trial_num, fname, id_mol_dict):
             result_dict['ttfp'].append(spearmanr(ref_rank, sim_list).statistic)
 
         # GESim
-        sim_list = gesim.graph_entropy_similarity_batch(sim_mol_rank_list[0], sim_mol_rank_list[1:], r=4)
+        sim_list = gesim.graph_entropy_similarity_batch(sim_mol_rank_list[0], sim_mol_rank_list[1:], r=4, use_logistic_scaler=False)
         if len(set(sim_list)) == 1:
             result_dict['gesim'].append(0)
         else:

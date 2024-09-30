@@ -20,7 +20,7 @@ def calc_bulk_tanimoto_sim(query_fp, target_fps, output_dir, query_id):
 
 
 def calc_bulk_gesim(query_mol, target_mols, output_dir, query_id):
-    sim_results = gesim.graph_entropy_similarity_batch(query_mol, target_mols, r=4)
+    sim_results = gesim.graph_entropy_similarity_batch(query_mol, target_mols, r=4, use_logistic_scaler=False)
     out_list = [f"{i}\t{v}\n" for i, v in enumerate(sim_results)]
     ofname = os.path.join(output_dir, f"gesims_active{query_id}.txt")
     with open(ofname, 'w') as f:
